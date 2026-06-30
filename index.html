@@ -1,0 +1,762 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draft Subscription Action Identifier</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    padding: 32px 16px;
+    color: #1a1a2e;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5a6a8a;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f1f3d;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .summary {
+    font-size: 14px;
+    color: #5a6a8a;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  .question-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #2d5be3;
+    margin-bottom: 6px;
+  }
+
+  .question-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f1f3d;
+    margin-bottom: 14px;
+  }
+
+  select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #d0d8e8;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a2e;
+    background: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235a6a8a' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: #2d5be3;
+    box-shadow: 0 0 0 3px rgba(45,91,227,0.12);
+  }
+
+  select.error {
+    border-color: #e03e3e;
+    box-shadow: 0 0 0 3px rgba(224,62,62,0.12);
+  }
+
+  .error-msg {
+    display: none;
+    color: #e03e3e;
+    font-size: 12px;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  .error-msg.visible {
+    display: block;
+  }
+
+  button {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    background: #2d5be3;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 4px;
+  }
+
+  button:hover { background: #1e46c7; }
+  button:active { transform: scale(0.99); }
+
+  #result {
+    display: none;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  #result-text {
+    padding: 24px;
+    font-size: 14px;
+    line-height: 1.75;
+    color: #1a1a2e;
+    white-space: pre-wrap;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="eyebrow">Support Decision Tool</div>
+    <h1>Draft Subscription Action Identifier</h1>
+    <p class="summary">Use this tool along with the region-appropriate Admin Panel, to identify the customer's plan and intended subscription outcome</p>
+  </header>
+
+  <div class="card">
+    <div class="question-label">Question 1</div>
+    <div class="question-text">Plan</div>
+    <select id="q1">
+      <option value="">— Select a plan —</option>
+      <option value="basic">Basic/Pro Plan</option>
+      <option value="prox">Pro X</option>
+      <option value="up">UP/Unified - Stripe Specifically</option>
+      <option value="cbs">Any plan that has "CBS"</option>
+      <option value="none">No plan listed</option>
+    </select>
+    <span class="error-msg" id="err1">Please select a plan.</span>
+  </div>
+
+  <div class="card">
+    <div class="question-label">Question 2</div>
+    <div class="question-text">Intended Outcome</div>
+    <select id="q2">
+      <option value="">— Select an outcome —</option>
+      <option value="seat">Wants to add/remove a seat/license</option>
+      <option value="user">Wants to add/remove a user</option>
+      <option value="email">Wants to change a login email or swap users</option>
+      <option value="payment">Wants to update payment method</option>
+      <option value="billing">Wants to change billing cycle/interval</option>
+      <option value="cancel">Wants to cancel</option>
+      <option value="reactivate">Wants to reactivate their subscription</option>
+      <option value="word">Wants to add/remove word templating</option>
+      <option value="pdf">Wants to add/remove pdf court forms</option>
+    </select>
+    <span class="error-msg" id="err2">Please select an intended outcome.</span>
+  </div>
+
+  <div class="card">
+    <button onclick="getScript()">Submit</button>
+  </div>
+
+  <div id="result">
+    <div id="result-text"></div>
+  </div>
+</div>
+
+<script>
+const scripts = {
+  basic: {
+    seat:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+To add a seat/license:
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your screen, click "Team".
+3. Review your current team list - if you see an empty seat, you do not need to purchase additional seats/licenses until you fill that seat.
+4. If you don't see any empty seats, click the "Add seats" button on the top right of your user list.
+5. Choose the number of seats you wish to add and confirm your purchase.
+6. You are now able to invite a new user. (You may need to refresh the page if you don't see the "Empty seat" panel pop up after purchase)
+
+To remove a seat/license:
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your screen, click "Team".
+3. Find a seat panel that says "Empty Seat". If you do not see one, you'll need to first remove a user from their seat. (You may need to refresh the page if you don't see the "Empty seat" panel pop up after removal of a user)
+4. To remove an empty seat, click the vertical ellipses at the right of the panel.
+5. Click "Remove seat"
+6. Then click "Remove seat" on the popup.
+Please note, data on your account is connected to the account itself, not a seat or a user, so changing the number of seats, or users occupying a seat will not have any effect on data saved to the account.`,
+
+    user:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+Invite a user to a seat:
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Team" icon on the bottom left corner of your screen
+3. Locate an "Empty seat" panel
+4. Click the "+ add user" link
+5. Select their access level
+6. Enter the user's email.
+
+Remove a user from a seat:
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Team" icon on the bottom left corner of your screen.
+3. Locate the user you wish to remove, from the list
+4. Click the vertical ellipses on the right of the user panel
+5. If the user you are removing is an admin, you will need to remove admin access first by un-checking the "admin" box, then click the ellipses again
+6. Click "Remove User"
+7. Click "Remove" on the pop-up. That user has been removed
+Please note, data on your account is connected to the account itself, not a seat or a user, so changing the number of seats, or users occupying a seat will not have any effect on data saved to the account.`,
+
+    email:
+`Please use Draft Admin Panel to review account info and determine which steps below match the cx's situation:
+
+Solo Account - If cx is a solo user:
+1. Verify in Admin panel that license count says "1"
+2. If it says "2" or more, jump down to the workflows below, for multiseat accounts
+3. Obtain written permission from the user listed on the Draft account to make an email change
+4. Written permission can be in the form of an email from the cx listed on the Draft account OR cx can log into Draft, and start a live chat
+5. If solo user has left their firm, and the email used on Draft is a firm-owned email domain, their email domain owner will need to get control of the solo user's email inbox, to either email us from the solo user's email inbox, or reset the Draft password, log into Draft and start a live chat. If the email on the Draft account is not firm-owned, the firm will need to reach out to the departed employee for verification.
+6. If CX has a UUID listed in the Admin Panel, use the "Split user request" button in #help-draft to submit a request to the team
+7. If CX does not have a UUID listed in the Admin Panel, post directly in #help-draft to submit a request to the team
+
+
+Multi-seat account - If cx making request is NOT an admin user:
+Please let cx know that they need to reach out to the admin(s) on their account to make the email change for them
+Steps for Account Admin:
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Team"
+3. Locate the user you wish to remove. Click the 3 dots on the right side of their panel.
+4. If the user you are removing is an admin, you will need to remove admin access first by un-checking the "admin" box, then click the ellipses again
+5. Click "remove user".
+6. Once they are removed, your page will refresh, and you will see a user panel that now says "Empty Seat". (You may need to refresh the page if you don't see the "Empty seat" panel pop up after removal of a user)
+7. To add a new user, click "+ add user" and fill out the popup invitation. This will invite your new user via email.
+
+Multi-seat account - If cx making request is NOT an admin user AND there are no available admin users (ie - account only has one admin user, and that user has left the firm):
+If the only Draft Admin user has left their firm, and the email used on Draft is a firm-owned email domain, their email domain owner will need to get control of the departed user's email inbox, to either email us from the departed user's email inbox, or reset the Draft password, log into Draft and start a live chat. If the email on the Draft account is not firm-owned, the firm will need to reach out to the departed employee for verification.`,
+
+    payment:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. Click "Team" on the bottom left of your screen
+3. Click "Payment method" on the top of your screen
+4. Click the "Update payment method" button to update your credit card info.`,
+
+    billing:
+`This is a self serve action. Please send these steps to the CX:
+
+Please note, monthly plan users cannot change to annual plans any longer. The only cycle/interval change that can be made is from users already on an annual plan wanting to switch to a monthly plan.
+
+1. A user with Admin access needs to log into Clio Draft
+2. Click "Team" on the bottom left of your screen
+3. On the top of the page, toggle to "Plan Details"
+4. Locate the "Billing cycle" section
+5. Select the "Monthly" option`,
+
+    cancel:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. Click "Team" on the bottom left of your screen
+3. At the top, toggle to "Plan Details".
+4. Click "Cancel subscription" at the bottom of the page.
+5. Check the acknowledgement box, and then click "Cancel Clio Draft subscription".
+6. Fill out the "We're sad to see you go" form,  and then click "Cancel Clio Draft subscription".
+7. Once you see the confirmation page, your cancellation is submitted. You'll have access to the account until the end of the paid billing period.`,
+
+    reactivate:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. Update the payment card on file, if necessary
+3. Click the renew button to renew the account.
+Please note, canceled accounts can only be renewed as-is. No changes to seats/licenses or products can be made until after the renewal has occurred.`,
+
+    word:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+Purchase Word templating
+Please note, switching to Pro will add on the Legacy version of our Word templating tool. It will not change the platform you are subscribed to, it will not change your platform interface, and it will not add on other platforms word templating features.
+1. A user with Admin access needs to log into Clio Draft
+2. Click "Team" on the bottom left of your screen
+3. On the top of the page, toggle to "Plan Details"
+4. Locate the "Switch plans" section
+5. Select the "Pro" option and follow the on-screen steps
+
+Remove Word templating
+1. A user with Admin access needs to log into Clio Draft
+2. Click "Team" on the bottom left of your screen
+3. On the top of the page, toggle to "Plan Details"
+4. Locate the "Switch plans" section
+5. Select the "Basic" option and follow the on-screen steps`,
+
+    pdf:
+`This is not a subscription feature available for this product.`
+  },
+
+  prox: {
+    seat:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+Add seats/licenses
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. Under the Subscription & Billing section on the top left, click into Subscription
+4. Click the "Update seats" button
+5. Use the "+" to add seats
+6. Click the "Add X seats" button to confirm your purchase
+
+
+Remove Seats/licenses
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. Under the Subscription & Billing section on the top left, click into Subscription
+4. Click the "Update seats" button
+5. Use the "-" to remove seats
+6. If the popup won't allow you to remove seats, it is because you still have users occupying those seats. In this instance, you'll need to click into "Team" on the left, and remove users from the seats they are occupying, then go back to step 3.
+7. Click the "Remove X seats" button to confirm
+Please note, data on your account is connected to the account itself, not a seat or a user, so changing the number of seats, or users occupying a seat will not have any effect on data saved to the account.`,
+
+    user:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+To invite a user:
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. On the top left, under "WORKSPACE & TEAM", click "Team"
+4. Click the "Invite Teammate" button on the top right of the page to invite a new member
+5. If you do not have any available seats/licenses, you'll need to click into "Subscription" on the left, and then click the "Update seats" button to purchase more seats/licenses OR remove an existing user from their seat, so that a new person can be invited to occupy it
+6. Enter 1 email per field, and select the user's Role - Member or Admin
+7. Click "send invite"
+
+
+To remove a user:
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. On the top left, under "WORKSPACE & TEAM", click "Team"
+4. Find the user you want to remove, using the search bar if necessary
+5. Click the "actions" button on the user panel
+6. Click "Remove User"
+Please note, data on your account is connected to the account itself, not a seat or a user, so changing the number of seats, or users occupying a seat will not have any effect on data saved to the account.
+From here, you can invite a new user (no affect on billing), or remove the seat (affects billing)`,
+
+    email:
+`Please use Draft Admin Panel to review account info and determine which steps below match the cx's situation:
+
+Solo Account - If cx is a solo user:
+1. Verify in Admin panel that license count says "1"
+2. If it says "2" or more, jump down to the workflows below, for multi-seat accounts
+3. Obtain written permission from the user listed on the Draft account to make an email change
+4. Written permission can be in the form of an email from the cx listed on the Draft account OR cx can log into Draft, and start a live chat
+5. If solo user has left their firm, and the email used on Draft is a firm-owned email domain, their email domain owner will need to get control of the solo user's email inbox, to either email us from the solo user's email inbox, or reset the Draft password, log into Draft and start a live chat. If the email on the Draft account is not firm-owned, the firm will need to reach out to the departed employee for verification.
+6. If CX has a UUID listed in the Admin Panel, use the "Split user request" button in #help-draft to submit a request to the team
+7. If CX does not have a UUID listed in the Admin Panel, post directly in #help-draft to submit a request to the team
+
+
+Multi-seat account - If cx making request is NOT an admin user:
+Please let cx know that they need to reach out to the admin(s) on their account to make the email change for them
+Steps for Account Admin (these can be sent to the user):
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Click into "Team"
+4. Find the user you want to remove, using the search bar if necessary
+5. Click the "actions" button on the user panel
+6. Click "Remove User"
+From here, you can invite a new user (no affect on billing), or remove the seat (affects billing)
+
+Multi-seat account - If cx making request is NOT an admin user AND there are no available admin users (ie - account only has one admin user, and that user has left the firm):
+If the only Draft Admin user has left their firm, and the email used on Draft is a firm-owned email domain, their email domain owner will need to get control of the departed user's email inbox, to either email us from the departed user's email inbox, or reset the Draft password, log into Draft and start a live chat. If the email on the Draft account is not firm-owned, the firm will need to reach out to the departed employee for verification.`,
+
+    payment:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Click the "Update Payment method" button`,
+
+    billing:
+`Please reach out to #help-draft for more assistance`,
+
+    cancel:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Click the "Cancel subscription" link and follow the on screen instructions`,
+
+    reactivate:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. Update the payment card on file if needed
+3. Click the Renew button
+Please note, canceled accounts can only be renewed as-is. No changes to seats/licenses can be made until after the renewal has occurred.`,
+
+    word:
+`This is not a subscription feature available for this product.`,
+
+    pdf:
+`This is not a subscription feature available for this product.`
+  },
+
+  up: {
+    seat:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+Add seats/licenses
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. Under the Subscription & Billing section on the top left, click into Subscription
+4. Click the "Update seats" button
+5. Use the "+" to add seats
+6. Click the "Add X seats" button to confirm your purchase
+
+
+Remove Seats/licenses
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. Under the Subscription & Billing section on the top left, click into Subscription
+4. Click the "Update seats" button
+5. Use the "-" to remove seats
+6. If the popup won't allow you to remove seats, it is because you still have users occupying those seats. In this instance, you'll need to click into "Team" on the left, and remove users from the seats they are occupying, then go back to step 3.
+7. Click the "Remove X seats" button to confirm
+Please note, data on your account is connected to the account itself, not a seat or a user, so changing the number of seats, or users occupying a seat will not have any effect on data saved to the account.`,
+
+    user:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+To invite a user:
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. On the top left, under "WORKSPACE & TEAM", click "Team"
+4. Click the "Invite Teammate" button on the top right of the page to invite a new member
+5. If you do not have any available seats/licenses, you'll need to click into "Subscription" on the left, and then click the "Update seats" button to purchase more seats/licenses OR remove an existing user from their seat, so that a new person can be invited to occupy it
+6. Enter 1 email per field, and select the user's Role - Member or Admin
+7. Click "send invite"
+
+
+To remove a user:
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. On the top left, under "WORKSPACE & TEAM", click "Team"
+4. Find the user you want to remove, using the search bar if necessary
+5. Click the "actions" button on the user panel
+6. Click "Remove User"
+Please note, data on your account is connected to the account itself, not a seat or a user, so changing the number of seats, or users occupying a seat will not have any effect on data saved to the account.
+From here, you can invite a new user (no affect on billing), or remove the seat (affects billing)`,
+
+    email:
+`Please use Draft Admin Panel to review account info and determine which steps below match the cx's situation:
+
+Solo Account - If cx is a solo user:
+1. Verify in Admin panel that license count says "1"
+2. If it says "2" or more, jump down to the workflows below, for multi-seat accounts
+3. Obtain written permission from the user listed on the Draft account to make an email change
+4. Written permission can be in the form of an email from the cx listed on the Draft account OR cx can log into Draft, and start a live chat
+5. If solo user has left their firm, and the email used on Draft is a firm-owned email domain, their email domain owner will need to get control of the solo user's email inbox, to either email us from the solo user's email inbox, or reset the Draft password, log into Draft and start a live chat. If the email on the Draft account is not firm-owned, the firm will need to reach out to the departed employee for verification.
+6. If CX has a UUID listed in the Admin Panel, use the "Split user request" button in #help-draft to submit a request to the team
+7. If CX does not have a UUID listed in the Admin Panel, post directly in #help-draft to submit a request to the team
+
+
+Multi-seat account - If cx making request is NOT an admin user:
+Please let cx know that they need to reach out to the admin(s) on their account to make the email change for them
+Steps for Account Admin (these can be sent to the user):
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Click into "Team"
+4. Find the user you want to remove, using the search bar if necessary
+5. Click the "actions" button on the user panel
+6. Click "Remove User"
+From here, you can invite a new user (no affect on billing), or remove the seat (affects billing)
+
+Multi-seat account - If cx making request is NOT an admin user AND there are no available admin users (ie - account only has one admin user, and that user has left the firm):
+If the only Draft Admin user has left their firm, and the email used on Draft is a firm-owned email domain, their email domain owner will need to get control of the departed user's email inbox, to either email us from the departed user's email inbox, or reset the Draft password, log into Draft and start a live chat. If the email on the Draft account is not firm-owned, the firm will need to reach out to the departed employee for verification.`,
+
+    payment:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Click the "Update Payment method" button`,
+
+    billing:
+`1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Go to the "Billing Cycle" section
+5. Make your selection and follow the on-screen instructions`,
+
+    cancel:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Click the "Cancel subscription" link and follow the on screen instructions`,
+
+    reactivate:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. Update the payment card on file if needed
+3. Click the Renew button
+Please note, canceled accounts can only be renewed as-is. No changes to seats/licenses, products, or billing cycles can be made until after the renewal has occurred.`,
+
+    word:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+Purchase Word Templating:
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Locate the "Word document automation" product
+5. Click the "Add" button
+6. Check the "Word document automation" checkbox
+7. Click "Confirm" to confirm your purchase
+8. The platform will think for a moment and once its complete, refresh your screen
+
+Remove Word Templating:
+To note, you'll need to be subscribed to a minimum of 1 pdf court forms product to be able to remove Word templating
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Locate the "Word document automation" product
+5. Click the "Remove" button
+6. Uncheck the checkbox
+7. Click "Confirm"
+8. The platform will think for a moment and once its complete, refresh your screen`,
+
+    pdf:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+Purchase PDF court form products:
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Locate the "Fillable court forms" product
+5. Click the "Add" button
+6. Check the checkboxes next to each PDF product you'd like to purchase
+7. Click "Confirm" to confirm your purchase
+8. The platform will think for a moment and once its complete, refresh your screen
+
+Remove PDF court form products:
+To note, you'll need to be subscribed to a minimum of 1 product to be able to remove pdf court form libraries.
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Locate the "Fillable court forms" product
+5. Click the "Remove" button
+6. Uncheck the checkbox(es) next to each pdf product you want to remove
+7. Click "Confirm"
+8. The platform will think for a moment and once its complete, refresh your screen`
+  },
+
+  cbs: {
+    seat:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+Add seats/licenses
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. Under the Subscription & Billing section on the top left, click into Subscription
+4. Click the "Update seats" button
+5. Use the "+" to add seats
+6. Click the "Add X seats" button to confirm your purchase
+
+
+Remove Seats/licenses
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. Under the Subscription & Billing section on the top left, click into Subscription
+4. Click the "Update seats" button
+5. Use the "-" to remove seats
+6. If the popup won't allow you to remove seats, it is because you still have users occupying those seats. In this instance, you'll need to click into "Team" on the left, and remove users from the seats they are occupying, then go back to step 3.
+7. Click the "Remove X seats" button to confirm
+Please note, data on your account is connected to the account itself, not a seat or a user, so changing the number of seats, or users occupying a seat will not have any effect on data saved to the account.`,
+
+    user:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+To invite a user:
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. On the top left, under "WORKSPACE & TEAM", click "Team"
+4. Click the "Invite Teammate" button on the top right of the page to invite a new member
+5. If you do not have any available seats/licenses, you'll need to click into "Subscription" on the left, and then click the "Update seats" button to purchase more seats/licenses OR remove an existing user from their seat, so that a new person can be invited to occupy it
+6. Enter 1 email per field, and select the user's Role - Member or Admin
+7. Click "send invite"
+
+
+To remove a user:
+1. A user with Admin access needs to log into Clio Draft
+2. Click the "Settings" icon, on the bottom left corner of your screen.
+3. On the top left, under "WORKSPACE & TEAM", click "Team"
+4. Find the user you want to remove, using the search bar if necessary
+5. Click the "actions" button on the user panel
+6. Click "Remove User"
+Please note, data on your account is connected to the account itself, not a seat or a user, so changing the number of seats, or users occupying a seat will not have any effect on data saved to the account.
+From here, you can invite a new user (no affect on billing), or remove the seat (affects billing)`,
+
+    email:
+`Please use Draft Admin Panel to review account info and determine which steps below match the cx's situation:
+
+Solo Account - If cx is a solo user:
+1. Verify in Admin panel that license count says "1"
+2. If it says "2" or more, jump down to the workflows below, for multi-seat accounts
+3. Obtain written permission from the user listed on the Draft account to make an email change
+4. Written permission can be in the form of an email from the cx listed on the Draft account OR cx can log into Draft, and start a live chat
+5. If solo user has left their firm, and the email used on Draft is a firm-owned email domain, their email domain owner will need to get control of the solo user's email inbox, to either email us from the solo user's email inbox, or reset the Draft password, log into Draft and start a live chat. If the email on the Draft account is not firm-owned, the firm will need to reach out to the departed employee for verification.
+6. If CX has a UUID listed in the Admin Panel, use the "Split user request" button in #help-draft to submit a request to the team
+7. If CX does not have a UUID listed in the Admin Panel, post directly in #help-draft to submit a request to the team
+
+
+Multi-seat account - If cx making request is NOT an admin user:
+Please let cx know that they need to reach out to the admin(s) on their account to make the email change for them
+Steps for Account Admin (these can be sent to the user):
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Click into "Team"
+4. Find the user you want to remove, using the search bar if necessary
+5. Click the "actions" button on the user panel
+6. Click "Remove User"
+From here, you can invite a new user (no affect on billing), or remove the seat (affects billing)
+
+Multi-seat account - If cx making request is NOT an admin user AND there are no available admin users (ie - account only has one admin user, and that user has left the firm):
+If the only Draft Admin user has left their firm, and the email used on Draft is a firm-owned email domain, their email domain owner will need to get control of the departed user's email inbox, to either email us from the departed user's email inbox, or reset the Draft password, log into Draft and start a live chat. If the email on the Draft account is not firm-owned, the firm will need to reach out to the departed employee for verification.`,
+
+    payment:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Click the "Update Payment method" button`,
+
+    billing:
+`This is a self serve action. Please send these steps to the CX:
+
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Go to the "Change Billing Cycle" section
+5. Make your selection and follow the on-screen instructions`,
+
+    cancel:
+`Please direct customer to the Retentions team for assistance.`,
+
+    reactivate:
+`Please direct customer to the Retentions team for assistance.`,
+
+    word:
+`Please direct customer to the Retentions team for assistance.`,
+
+    pdf:
+`This is a self serve action. Please send the relevant steps to the CX:
+
+Purchase PDF court form products:
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Locate the "Change court forms" section
+5. Click the "Add (+)" button and follow the on-screen instructions
+
+Remove PDF court form products:
+1. A user with Admin access needs to log into Clio Draft
+2. On the bottom left of your home screen, click "Settings"
+3. Under the Subscription & Billing section, click "Subscription"
+4. Locate the "Fillable court forms" product
+5. Locate the "Change court forms" section
+6. Click the "Remove (-)" button and follow the on-screen instructions`
+  },
+
+  none: {
+    seat:       `Please reach out to the #help-draft channel or start a swarm for more assistance`,
+    user:       `Please reach out to the #help-draft channel or start a swarm for more assistance`,
+    email:      `Please reach out to the #help-draft channel or start a swarm for more assistance`,
+    payment:    `Please reach out to the #help-draft channel or start a swarm for more assistance`,
+    billing:    `Please reach out to the #help-draft channel or start a swarm for more assistance`,
+    cancel:     `Please reach out to the #help-draft channel or start a swarm for more assistance`,
+    reactivate: `Please reach out to the #help-draft channel or start a swarm for more assistance`,
+    word:       `Please reach out to the #help-draft channel or start a swarm for more assistance`,
+    pdf:        `Please reach out to the #help-draft channel or start a swarm for more assistance`
+  }
+};
+
+function getScript() {
+  const q1 = document.getElementById('q1');
+  const q2 = document.getElementById('q2');
+  const err1 = document.getElementById('err1');
+  const err2 = document.getElementById('err2');
+  const resultDiv = document.getElementById('result');
+  const resultText = document.getElementById('result-text');
+
+  let valid = true;
+
+  if (!q1.value) {
+    q1.classList.add('error');
+    err1.classList.add('visible');
+    valid = false;
+  } else {
+    q1.classList.remove('error');
+    err1.classList.remove('visible');
+  }
+
+  if (!q2.value) {
+    q2.classList.add('error');
+    err2.classList.add('visible');
+    valid = false;
+  } else {
+    q2.classList.remove('error');
+    err2.classList.remove('visible');
+  }
+
+  if (!valid) return;
+
+  const text = scripts[q1.value][q2.value];
+  resultText.textContent = text;
+  resultDiv.style.display = 'block';
+  resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
